@@ -19,10 +19,6 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     event SupplyChanged(uint8 maxSupply, uint256 id);
     event AccessGiven(address author, uint256 id);
     event Minted(address author, uint256 id);
-       
-    constructor() {
-        _disableInitializers();
-    }
 
     function initialize() initializer public {
         __ERC1155_init("https://paperscore.org/nft/paper-{id}.json");
@@ -30,18 +26,13 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
         __ERC1155Supply_init();
     }
 
-    modifier _exists(uint256 id) {
-        require(exists(id), "Wrong tokenID");
-        _;
-    }
-
-    function setMaxSupply(uint256 id, uint8 maxSupply) external onlyOwner _exists(id){
-        require(papers[id].maxSuuply == 0, "Max supply is Immutable");
-        papers[id].maxSuuply == maxSupply;
+    function setMaxSupply(uint256 id, uint8 maxSupply) external onlyOwner {
+        require(papers[id].maxSupply == 0, "Max supply is Immutable");
+        papers[id].maxSupply == maxSupply;
         emit SupplyChanged(maxSupply, id);
     }
 
-    function giveAccess(uint256 id, address author) external onlyOwner _exists(id) {
+    function giveAccess(uint256 id, address author) external onlyOwner {
         require(papers[id].valid[author] == false, "Author already authorized");
         require(papers[id].accessGiven < papers[id].maxSupply, "All Authors authorized");
         papers[id].valid[author] == true;
@@ -50,11 +41,10 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     }
 
     
-    function mint(uint256 id) _exists(id)
-        external
-    {
+    function mint(uint256 id) external {
         require(papers[id].valid[msg.sender] == true, "You are not authorized to Mint an ownership NFT.");
         require(totalSupply(id) < papers[id].maxSupply, "All ownership NFTs minted already.");
+        papers[id].valid[msg.sender] == false;
         _mint(msg.sender, id, 1, "");
         emit Minted(msg.sender, id);
     }
