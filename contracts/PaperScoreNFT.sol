@@ -25,17 +25,17 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
         __Ownable_init();
         __ERC1155Supply_init();
     }
-
-    function setMaxSupply(uint256 id, uint8 maxSupply) external onlyOwner {
+    
+    function setMaxSupply(uint256 id, uint8 _maxSupply) external onlyOwner {
         require(papers[id].maxSupply == 0, "Max supply is Immutable");
-        papers[id].maxSupply == maxSupply;
-        emit SupplyChanged(maxSupply, id);
+        papers[id].maxSupply = _maxSupply;
+        emit SupplyChanged(_maxSupply, id);
     }
 
     function giveAccess(uint256 id, address author) external onlyOwner {
         require(papers[id].valid[author] == false, "Author already authorized");
         require(papers[id].accessGiven < papers[id].maxSupply, "All Authors authorized");
-        papers[id].valid[author] == true;
+        papers[id].valid[author] = true;
         papers[id].accessGiven++;
         emit AccessGiven(author, id);
     }
@@ -44,7 +44,7 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     function mint(uint256 id) external {
         require(papers[id].valid[msg.sender] == true, "You are not authorized to Mint an ownership NFT.");
         require(totalSupply(id) < papers[id].maxSupply, "All ownership NFTs minted already.");
-        papers[id].valid[msg.sender] == false;
+        papers[id].valid[msg.sender] = false;
         _mint(msg.sender, id, 1, "");
         emit Minted(msg.sender, id);
     }
