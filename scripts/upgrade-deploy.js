@@ -4,7 +4,7 @@ const { ethers, upgrades } = require('hardhat');
 async function main() {
 
   const paperScore = await ethers.getContractFactory("PaperScore");
-  const paperscore = await upgrades.upgradeProxy('0xB6c29716216ba37eaCB3c449fCCA97EFbAc37037', paperScore);
+  const paperscore = await upgrades.upgradeProxy('0xf8C2Cf66B15C83086F3DDa895B6d36cDad897B8A', paperScore);
 
   await paperscore.deployed();
 

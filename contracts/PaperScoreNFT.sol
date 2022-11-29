@@ -39,7 +39,6 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
         papers[id].accessGiven++;
         emit AccessGiven(author, id);
     }
-
     
     function mint(uint256 id) external {
         require(papers[id].valid[msg.sender] == true, "You are not authorized to Mint an ownership NFT.");
@@ -52,6 +51,15 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
+
+    function uri(uint256 _tokenid) override public pure returns (string memory) {
+        return string(
+            abi.encodePacked(
+                "https://bafybeicmo2s2x522kvujjyszk3qf3hlbh4nx5nfpuf42de74meshbenq3i.ipfs.w3s.link/diagram.json"
+            )
+        );
+    }
+    
 
     function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
         internal
