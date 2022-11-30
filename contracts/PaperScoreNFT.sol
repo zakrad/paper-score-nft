@@ -5,8 +5,9 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import "./ContextMixin.sol";
 
-contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ERC1155SupplyUpgradeable {
+contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ERC1155SupplyUpgradeable, ContextMixin {
 
     struct Paper {
         uint8 maxSupply;
@@ -55,12 +56,37 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     function uri(uint256 _tokenid) override public pure returns (string memory) {
         return string(
             abi.encodePacked(
-                "https://bafybeicmo2s2x522kvujjyszk3qf3hlbh4nx5nfpuf42de74meshbenq3i.ipfs.w3s.link/diagram.json"
+                "https://gateway.pinata.cloud/ipfs/QmT6149HRNVbvUN5BubKnMGfFpcbxTq4FYSFhiDLC8GmiA"
             )
         );
     }
-    
 
+    function contractURI() public view returns (string memory) {
+        return "https://gateway.pinata.cloud/ipfs/QmSbjrDcLsiWyHqpUL15WjGhcopdHSxc9kcrGGCgCZ3WFr";
+    }
+
+    function _msgSender()
+        internal
+        override
+        view
+        returns (address sender)
+    {
+        return ContextMixin.msgSender();
+    }
+
+    function isApprovedForAll(
+        address _owner,
+        address _operator
+    ) public override(ERC1155Upgradeable) view returns (bool isOperator) {
+        // if OpenSea's ERC1155 Proxy Address is detected, auto-return true
+            // for Polygon's Mumbai testnet, use 0x207Fa8Df3a17D96Ca7EA4f2893fcdCb78a304101
+       if (_operator == address(0x53d791f18155C211FF8b58671d0f7E9b50E596ad)) {
+            return true;
+        }
+        // otherwise, use the default ERC1155.isApprovedForAll()
+        return super.isApprovedForAll(_owner, _operator);
+    }
+    
     function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
         internal
         override(ERC1155Upgradeable, ERC1155SupplyUpgradeable)

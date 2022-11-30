@@ -1,0 +1,24 @@
+{
+  "name": "A name for Paper NFT could be - e.g. Paper Title",
+  "description": "A description about Paper provided by PaperScore",
+  "image": "A URI pointing to a resource with mime type image/* representing the asset to which this token represents. Consider making any images at a width between 320 and 1080 pixels and aspect ratio between 1.91:1 and 4:5 inclusive. https://s3.amazonaws.com/your-bucket/images/{id}.png",
+  "properties": {
+    "simple_property": "example value",
+    "rich_property": {
+      "name": "Name",
+      "value": "123",
+      "display_value": "123 Example Value",
+      "class": "emphasis",
+      "css": {
+        "color": "#ffffff",
+        "font-weight": "bold",
+        "text-decoration": "underline"
+      }
+    },
+    "array_property": {
+      "name": "Name",
+      "value": [1, 2, 3, 4],
+      "class": "emphasis"
+    }
+  }
+}
