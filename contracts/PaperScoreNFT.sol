@@ -56,7 +56,7 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     function uri(uint256 _tokenid) override public pure returns (string memory) {
         return string(
             abi.encodePacked(
-                "https://gateway.pinata.cloud/ipfs/QmT6149HRNVbvUN5BubKnMGfFpcbxTq4FYSFhiDLC8GmiA"
+                "https://gateway.pinata.cloud/ipfs/QmSWngnKQD9uQg7jh2qErs9L8Ja56FouyG79KtxPDmTfaE"
             )
         );
     }
