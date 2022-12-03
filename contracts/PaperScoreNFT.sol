@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./ContextMixin.sol";
 
 contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ERC1155SupplyUpgradeable, ContextMixin {
@@ -15,16 +16,27 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
         mapping(address => bool) valid;
     }
 
+    uint256 public mintPrice;
+    uint256 public feePrice;
+
     mapping(uint256 => Paper) papers;
+    mapping(address => uint256) feeBalance;
 
     event SupplyChanged(uint8 maxSupply, uint256 id);
     event AccessGiven(address author, uint256 id);
+    event AccessChanged(address author, uint256 id);
     event Minted(address author, uint256 id);
+    event priceChanged(uint256 newPrice);
+    event feeChanged(uint256 newFee);
 
     function initialize() initializer public {
         __ERC1155_init("https://paperscore.org/nft/paper-{id}.json");
         __Ownable_init();
         __ERC1155Supply_init();
+    }
+
+    receive() external payable{
+        feeBalance[msg.sender] += msg.value;
     }
     
     function setMaxSupply(uint256 id, uint8 _maxSupply) external onlyOwner {
@@ -34,14 +46,38 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     }
 
     function giveAccess(uint256 id, address author) external onlyOwner {
+        require(feePrice <= feeBalance[author], "Author did not pay for tx fee.");
         require(papers[id].valid[author] == false, "Author already authorized");
         require(papers[id].accessGiven < papers[id].maxSupply, "All Authors authorized");
+        feeBalance[msg.sender] -= feePrice;
         papers[id].valid[author] = true;
         papers[id].accessGiven++;
         emit AccessGiven(author, id);
     }
+
+    function changeAccess(uint256 id, address author) external {
+        require(papers[id].valid[msg.sender] == true, "You are not allowed to edit access.");
+        papers[id].valid[msg.sender] = false;
+        papers[id].valid[author] = true;
+        emit AccessChanged(author, id);
+    }
     
-    function mint(uint256 id) external {
+    function setMintPrice(uint256 newPrice) external onlyOwner {
+        mintPrice = newPrice;
+        emit priceChanged(newPrice);
+    }
+
+    function setFeePrice(uint256 newFee) external onlyOwner {
+        feePrice = newFee;
+        emit feeChanged(newFee);
+    }
+
+    function withdraw(address receiver) external onlyOwner {
+      payable(receiver).transfer(address(this).balance);
+    }
+
+    function mint(uint256 id) payable external {
+        require(msg.value == mintPrice, "Send exact amount of ETH (mintPrice).");
         require(papers[id].valid[msg.sender] == true, "You are not authorized to Mint an ownership NFT.");
         require(totalSupply(id) < papers[id].maxSupply, "All ownership NFTs minted already.");
         papers[id].valid[msg.sender] = false;
@@ -56,13 +92,14 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     function uri(uint256 _tokenid) override public pure returns (string memory) {
         return string(
             abi.encodePacked(
-                "https://gateway.pinata.cloud/ipfs/QmSWngnKQD9uQg7jh2qErs9L8Ja56FouyG79KtxPDmTfaE"
+                "https://ipfs.io/ipfs/QmRR1E3TTtBYvQpCoMvds4JB6yREiZvUTC6HoLoYmYLBep/",
+                Strings.toString(_tokenid),".json"
             )
         );
     }
 
     function contractURI() public view returns (string memory) {
-        return "https://gateway.pinata.cloud/ipfs/QmSbjrDcLsiWyHqpUL15WjGhcopdHSxc9kcrGGCgCZ3WFr";
+        return "https://gateway.pinata.cloud/ipfs/QmPrj38UDUeRHxGbH4GmhhHVJpJZapcdgcwQariWWnnVon";
     }
 
     function _msgSender()
@@ -93,4 +130,5 @@ contract PaperScore is Initializable, ERC1155Upgradeable, OwnableUpgradeable, ER
     {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
+
 }
